@@ -1,4 +1,4 @@
-# simforge
+# simforger
 
 a simple wrapper around simforge that makes it way easier to run ios apps on apple silicon simulators.
 
