@@ -1,74 +1,38 @@
-# simforge: Run iOS Apps on Apple Silicon Simulators
+# simforge
 
-simforge is a tool that enables running ARM64 iOS apps on Apple Silicon iOS simulators by modifying the Mach-O binary headers to indicate simulator compatibility.
+a simple wrapper around simforge that makes it way easier to run ios apps on apple silicon simulators.
 
-![simforge](./simforge.gif)
+this started as a fork but ended up being basically just a bash script that automates all the annoying parts. put your ipa files in the apps folder, run the script, pick your app and simulator, and you're done.
 
-## Installation
+## what it does
 
-### Using Swift Package Manager
+simforger.sh handles the whole process for you:
 
-```bash
-git clone https://github.com/etharbuckle/simforge.git
-cd simforge
-swift build -c release
-```
+- extracts ipa files from the apps folder automatically
+- converts apps for simulator compatibility using simforge
+- signs frameworks, extensions, and the main app bundle
+- installs to your simulator
+- optionally launches the app
 
-This will create two executables:
-- `.build/release/simforge`: The core tool
-- `.build/release/simforge-cli`: An interactive CLI wrapper
+## how to use
 
-## Usage
+1. put your decrypted ipa files in the `apps` folder (or extract them yourself)
+2. run `./simforger.sh`
+3. pick which app you want to install
+4. pick which simulator to use (or use the booted one)
+5. wait for it to convert, sign, and install
+6. launch if you want
 
-### Option 1: Interactive CLI (Recommended)
+that's it. no need to manually run simforge convert, codesign everything, or figure out simulator uuids.
 
-The CLI tool provides an interactive interface that guides you through the process:
+## requirements
 
-1. Place your .app or .ipa file in the `apps` directory
-2. Run the CLI tool:
-```bash
-.build/release/simforge-cli
-```
-3. Follow the interactive prompts to:
-   - Select the app to process
-   - Choose a signing identity
-   - Select a simulator
+- macos with apple silicon
+- xcode command line tools (for simctl and codesign)
+- a decrypted ipa file (or extracted .app bundle)
 
-The CLI will automatically:
-- Extract IPA files if needed
-- Convert the app for simulator use
-- Sign all frameworks and the main bundle
-- Launch the simulator if needed
-- Install and launch the app
+the script will download simforge automatically if it's not found in your path or in the script directory.
 
-### Option 2: Manual Usage
+## how it works
 
-If you prefer manual control, you can use the core tool directly:
-
-1. Extract the `.app` bundle from the IPA:
-```bash
-unzip /path/to/your-app-decrypted.ipa -d /path/to/destination/
-```
-
-2. Convert for simulator:
-```bash
-simforge /path/to/Payload/YourApp.app
-```
-
-3. Code sign the modified app:
-```bash
-# Sign frameworks first
-codesign -f -s "$SIGNING_ID" /path/to/Payload/YourApp.app/Frameworks/*
-
-# Then sign the main app bundle
-codesign -f -s "$SIGNING_ID" /path/to/Payload/YourApp.app
-```
-
-4. Install to simulator:
-```bash
-xcrun simctl install "SIMULATOR_UUID" /path/to/Payload/YourApp.app
-```
-
-## Configuration
-
-The CLI tool creates a `.simforge_config` file that can store your simulator preference. To change the simulator, simply delete this file and run the CLI tool again.
+simforge itself modifies mach-o binary headers to make arm64 ios apps work on simulators. this script just wraps all that in a simple interactive menu so you don't have to remember all the commands and steps.
